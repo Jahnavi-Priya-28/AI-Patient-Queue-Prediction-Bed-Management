@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Activity, UserPlus, Ticket, Bed, LogOut } from "lucide-react";
 import { apiClient } from "@/lib/api";
+import { clearSession, requirePortalUser } from "@/lib/auth";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function ReceptionistDashboard() {
@@ -12,13 +13,9 @@ export default function ReceptionistDashboard() {
   const [beds, setBeds] = useState<any[]>([]);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("patientflow_user");
-    if (!storedUser) {
-      router.push("/login");
-      return;
-    }
-    setUser(JSON.parse(storedUser));
-    fetchBeds();
+    requirePortalUser("RECEPTIONIST")
+      .then((verifiedUser) => { setUser(verifiedUser); fetchBeds(); })
+      .catch((error: any) => { if (error.redirectTo) router.push(error.redirectTo); else { clearSession(); router.push("/login"); } });
   }, [router]);
 
   const fetchBeds = () => {
@@ -142,3 +139,6 @@ export default function ReceptionistDashboard() {
     </div>
   );
 }
+
+
+

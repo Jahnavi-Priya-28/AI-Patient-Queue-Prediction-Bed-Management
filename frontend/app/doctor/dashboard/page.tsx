@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Activity, UserCheck, LogOut } from "lucide-react";
 import { apiClient } from "@/lib/api";
+import { clearSession, requirePortalUser } from "@/lib/auth";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function DoctorDashboard() {
@@ -13,13 +14,9 @@ export default function DoctorDashboard() {
   const [calling, setCalling] = useState(false);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("patientflow_user");
-    if (!storedUser) {
-      router.push("/login");
-      return;
-    }
-    setUser(JSON.parse(storedUser));
-    fetchQueue();
+    requirePortalUser("DOCTOR")
+      .then((verifiedUser) => { setUser(verifiedUser); fetchQueue(); })
+      .catch((error: any) => { if (error.redirectTo) router.push(error.redirectTo); else { clearSession(); router.push("/login"); } });
   }, [router]);
 
   const fetchQueue = () => {
@@ -89,7 +86,7 @@ export default function DoctorDashboard() {
         {/* Queue Table */}
         <div className="themed-card rounded-[16px] shadow-stacked-tiny overflow-hidden" style={{ borderWidth: '1px', borderColor: 'var(--color-hairline)' }}>
           <div className="p-6 flex justify-between items-center themed-canvas" style={{ borderBottomWidth: '1px', borderColor: 'var(--color-hairline)' }}>
-            <h3 className="font-display text-xl font-light themed-ink">Today's Patient Queue</h3>
+            <h3 className="font-display text-xl font-light themed-ink">Today&apos;s Patient Queue</h3>
             <span className="text-xs font-mono themed-ink-sec">{activeQueue.length} Patients Active</span>
           </div>
 
@@ -156,3 +153,7 @@ export default function DoctorDashboard() {
     </div>
   );
 }
+
+
+
+

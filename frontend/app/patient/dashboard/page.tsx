@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Activity, Clock, Calendar, Ticket, LogOut } from "lucide-react";
 import { apiClient } from "@/lib/api";
+import { clearSession, requirePortalUser } from "@/lib/auth";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function PatientDashboard() {
@@ -12,12 +13,9 @@ export default function PatientDashboard() {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("patientflow_user");
-    if (!storedUser) {
-      router.push("/login");
-      return;
-    }
-    setUser(JSON.parse(storedUser));
+    requirePortalUser("PATIENT")
+      .then(setUser)
+      .catch((error: any) => { if (error.redirectTo) router.push(error.redirectTo); else { clearSession(); router.push("/login"); } });
   }, [router]);
 
   const handleLogout = () => {
@@ -108,3 +106,6 @@ export default function PatientDashboard() {
     </div>
   );
 }
+
+
+

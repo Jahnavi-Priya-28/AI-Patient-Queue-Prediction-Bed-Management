@@ -10,6 +10,7 @@ class Patient(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
+    organization_id: Mapped[int] = mapped_column(ForeignKey("organizations.id", ondelete="CASCADE"), index=True, nullable=False)
     patient_number: Mapped[str] = mapped_column(String(50), unique=True, index=True, nullable=False)
     date_of_birth: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     gender: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
@@ -24,3 +25,4 @@ class Patient(Base):
     appointments = relationship("Appointment", back_populates="patient")
     queue_entries = relationship("QueueEntry", back_populates="patient")
     beds = relationship("Bed", back_populates="current_patient")
+

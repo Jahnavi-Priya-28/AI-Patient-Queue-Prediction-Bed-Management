@@ -1,14 +1,23 @@
 from datetime import datetime, date, time
 from typing import Optional, List
 from pydantic import BaseModel, Field, ConfigDict
-from app.models.enums import UserRole, BedStatus, PriorityLevel, AppointmentStatus, QueueStatus
+from app.models.enums import BedStatus, PriorityLevel, AppointmentStatus, QueueStatus
 
 
-# Department Schemas
+class OrganizationResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    slug: str
+    is_active: bool
+
+
 class DepartmentResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    organization_id: int
     name: str
     code: str
     description: Optional[str] = None
@@ -21,12 +30,12 @@ class DepartmentCreate(BaseModel):
     description: Optional[str] = None
 
 
-# Doctor Schemas
 class DoctorResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     user_id: int
+    organization_id: int
     department_id: int
     employee_number: str
     specialization: Optional[str] = None
@@ -37,12 +46,12 @@ class DoctorResponse(BaseModel):
     last_name: Optional[str] = None
 
 
-# Patient Schemas
 class PatientResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     user_id: int
+    organization_id: int
     patient_number: str
     date_of_birth: Optional[date] = None
     gender: Optional[str] = None
@@ -54,7 +63,6 @@ class PatientResponse(BaseModel):
     email: Optional[str] = None
 
 
-# Appointment Schemas
 class AppointmentCreate(BaseModel):
     doctor_id: int
     department_id: int
@@ -70,6 +78,7 @@ class AppointmentResponse(BaseModel):
 
     id: int
     patient_id: int
+    organization_id: int
     doctor_id: int
     department_id: int
     appointment_date: date
@@ -84,7 +93,6 @@ class AppointmentResponse(BaseModel):
     department: Optional[DepartmentResponse] = None
 
 
-# Queue Schemas
 class CheckInRequest(BaseModel):
     appointment_id: int
     priority: Optional[PriorityLevel] = None
@@ -95,6 +103,7 @@ class QueueEntryResponse(BaseModel):
 
     id: int
     appointment_id: int
+    organization_id: int
     patient_id: int
     doctor_id: int
     department_id: int
@@ -113,11 +122,11 @@ class QueueEntryResponse(BaseModel):
     department: Optional[DepartmentResponse] = None
 
 
-# Ward & Bed Schemas
 class WardResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    organization_id: int
     name: str
     ward_type: str
     floor: int
@@ -147,7 +156,6 @@ class TransferBedRequest(BaseModel):
     new_bed_id: int
 
 
-# Notification Schema
 class NotificationResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -160,7 +168,6 @@ class NotificationResponse(BaseModel):
     created_at: datetime
 
 
-# Audit Log Schema
 class AuditLogResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -174,7 +181,6 @@ class AuditLogResponse(BaseModel):
     created_at: datetime
 
 
-# Analytics / Dashboard Schemas
 class DashboardMetricsResponse(BaseModel):
     total_patients: int
     today_appointments: int
@@ -188,7 +194,6 @@ class DashboardMetricsResponse(BaseModel):
     bed_occupancy_by_ward: List[dict]
 
 
-# ML Prediction & Forecast Schemas
 class PredictWaitingTimeRequest(BaseModel):
     queue_entry_id: int
 
@@ -196,7 +201,7 @@ class PredictWaitingTimeRequest(BaseModel):
 class PredictWaitingTimeResponse(BaseModel):
     queue_entry_id: int
     predicted_wait_minutes: float
-    confidence_interval: str = "±3.5 mins"
+    confidence_interval: str = "+/-3.5 mins"
     model_version: str = "v1.0.0-xgboost"
 
 

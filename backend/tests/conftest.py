@@ -5,6 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.db.base import Base
+from app.models.organization import Organization
 from app.models.user import User
 from app.models.patient import Patient
 from app.models.doctor import Doctor
@@ -44,6 +45,12 @@ fastapi_app.dependency_overrides[get_db] = override_get_db
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_database():
+    engine.dispose()
+    if os.path.exists(TEST_DB_FILE):
+        try:
+            os.remove(TEST_DB_FILE)
+        except OSError:
+            pass
     Base.metadata.create_all(bind=engine)
     yield
     Base.metadata.drop_all(bind=engine)
@@ -58,3 +65,4 @@ def setup_test_database():
 @pytest.fixture
 def client():
     return TestClient(fastapi_app)
+

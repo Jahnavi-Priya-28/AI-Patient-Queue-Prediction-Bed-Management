@@ -5,7 +5,8 @@ class UserRole(str, enum.Enum):
     PATIENT = "PATIENT"
     DOCTOR = "DOCTOR"
     RECEPTIONIST = "RECEPTIONIST"
-    ADMIN = "ADMIN"
+    HOSPITAL_ADMIN = "HOSPITAL_ADMIN"
+    SUPER_ADMIN = "SUPER_ADMIN"
 
 
 class BedStatus(str, enum.Enum):
@@ -24,6 +25,7 @@ class PriorityLevel(str, enum.Enum):
 
 class AppointmentStatus(str, enum.Enum):
     SCHEDULED = "SCHEDULED"
+    CONFIRMED = "CONFIRMED"
     CHECKED_IN = "CHECKED_IN"
     IN_QUEUE = "IN_QUEUE"
     IN_CONSULTATION = "IN_CONSULTATION"
@@ -38,3 +40,5 @@ class QueueStatus(str, enum.Enum):
     IN_CONSULTATION = "IN_CONSULTATION"
     COMPLETED = "COMPLETED"
     CANCELLED = "CANCELLED"
+    NO_SHOW = "NO_SHOW"
+    SKIPPED = "SKIPPED"

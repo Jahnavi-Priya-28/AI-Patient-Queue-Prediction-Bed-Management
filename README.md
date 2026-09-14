@@ -123,6 +123,30 @@ patientflow-ai/
 
 ---
 
+
+---
+
+## Demo Accounts
+
+Authentication uses `EMAIL + PASSWORD`. The backend derives the user's role, organization, permissions, and active status from the authenticated account.
+
+Development seed accounts:
+
+| Portal | Role | Email | Password |
+| --- | --- | --- | --- |
+| Administration Login | `HOSPITAL_ADMIN` | `admin@example.com` | `AdminPassword123!` |
+| Receptionist Login | `RECEPTIONIST` | `reception@example.com` | `ReceptionPassword123!` |
+| Doctor Login | `DOCTOR` | `doctor@example.com` | `DoctorPassword123!` |
+| Patient Login | `PATIENT` | `patient@example.com` | `PatientPassword123!` |
+
+Public registration creates patient accounts only. Hospital administrators can create staff accounts through the protected `/api/auth/admin/users` endpoint.
+
+Security behavior:
+
+- Login derives the stored backend role; the client never submits or selects a role.
+- Inactive users and inactive organizations cannot authenticate.
+- Staff analytics are protected from patient accounts.
+- Dashboard pages verify the session through `/api/auth/me`; local browser storage is only a cache.
 ## Testing & Verification
 
 - **Backend Pytest Suite**:
@@ -131,8 +155,10 @@ patientflow-ai/
   pytest
   ```
 
-- **Frontend Type Checking**:
+- **Frontend Type Checking / Lint / Build**:
   ```bash
   cd frontend
   npm run type-check
   ```
+
+

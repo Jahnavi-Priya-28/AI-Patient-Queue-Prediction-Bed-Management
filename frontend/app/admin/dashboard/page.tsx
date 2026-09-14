@@ -5,32 +5,39 @@ import { useRouter } from "next/navigation";
 import { Activity, Users, Clock, Bed, Cpu, LogOut } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { apiClient } from "@/lib/api";
+import { clearSession, requirePortalUser } from "@/lib/auth";
 
 export default function AdminDashboard() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [metrics, setMetrics] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("patientflow_user");
-    if (!storedUser) {
-      router.push("/login");
-      return;
-    }
-    setUser(JSON.parse(storedUser));
-
-    apiClient.get("/analytics/dashboard-metrics").then((res) => {
-      setMetrics(res.data);
-    }).catch(() => {});
+    requirePortalUser(["HOSPITAL_ADMIN", "SUPER_ADMIN"])
+      .then((verifiedUser) => {
+        setUser(verifiedUser);
+        return apiClient.get("/analytics/dashboard-metrics");
+      })
+      .then((res) => setMetrics(res.data))
+      .catch((err: any) => {
+        if (err.redirectTo) {
+          router.push(err.redirectTo);
+          return;
+        }
+        clearSession();
+        setError(err.response?.data?.detail || "Unable to load the administration command center.");
+        router.push("/login");
+      });
   }, [router]);
 
   const handleLogout = () => {
-    localStorage.removeItem("patientflow_access_token");
-    localStorage.removeItem("patientflow_user");
+    clearSession();
     router.push("/login");
   };
 
-  if (!user || !metrics) return null;
+  if (error) return <div className="min-h-screen themed-canvas themed-ink flex items-center justify-center p-6"><div className="themed-card rounded-[8px] border p-6 text-sm" style={{ borderColor: "var(--color-hairline)" }}>{error}</div></div>;
+  if (!user || !metrics) return <div className="min-h-screen themed-canvas themed-ink flex items-center justify-center text-sm themed-ink-sec">Loading command center...</div>;
 
   return (
     <div className="min-h-screen bg-canvas-cream text-ink flex flex-col">
@@ -153,3 +160,6 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+
+

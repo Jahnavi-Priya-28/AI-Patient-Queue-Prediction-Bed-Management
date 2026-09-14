@@ -1,4 +1,5 @@
 from app.models.enums import UserRole, BedStatus, PriorityLevel, AppointmentStatus, QueueStatus
+from app.models.organization import Organization
 from app.models.user import User
 from app.models.patient import Patient
 from app.models.doctor import Doctor
@@ -18,6 +19,7 @@ __all__ = [
     "PriorityLevel",
     "AppointmentStatus",
     "QueueStatus",
+    "Organization",
     "User",
     "Patient",
     "Doctor",

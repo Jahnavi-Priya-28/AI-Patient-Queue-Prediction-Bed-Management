@@ -10,12 +10,16 @@ class RegisterRequest(BaseModel):
     first_name: str = Field(..., min_length=1, max_length=100)
     last_name: str = Field(..., min_length=1, max_length=100)
     phone: Optional[str] = Field(None, max_length=20)
-    role: UserRole = Field(default=UserRole.PATIENT)
 
 
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
+
+
+class AdminCreateUserRequest(RegisterRequest):
+    role: UserRole = Field(..., description="Hospital role to create")
+    organization_id: Optional[int] = None
 
 
 class RefreshTokenRequest(BaseModel):
@@ -26,6 +30,7 @@ class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    organization_id: Optional[int] = None
     email: EmailStr
     role: UserRole
     first_name: str

@@ -11,6 +11,7 @@ class QueueEntry(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     appointment_id: Mapped[int] = mapped_column(ForeignKey("appointments.id", ondelete="CASCADE"), unique=True, nullable=False)
+    organization_id: Mapped[int] = mapped_column(ForeignKey("organizations.id", ondelete="CASCADE"), index=True, nullable=False)
     patient_id: Mapped[int] = mapped_column(ForeignKey("patients.id", ondelete="CASCADE"), nullable=False, index=True)
     doctor_id: Mapped[int] = mapped_column(ForeignKey("doctors.id", ondelete="RESTRICT"), nullable=False, index=True)
     department_id: Mapped[int] = mapped_column(ForeignKey("departments.id", ondelete="RESTRICT"), nullable=False, index=True)
@@ -33,3 +34,4 @@ class QueueEntry(Base):
     doctor = relationship("Doctor", back_populates="queue_entries")
     department = relationship("Department", back_populates="queue_entries")
     predictions = relationship("ModelPrediction", back_populates="queue_entry")
+

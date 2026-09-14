@@ -1,8 +1,39 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Activity, ArrowRight, ShieldCheck, Clock, Cpu, Bed } from "lucide-react";
+import { apiClient } from "@/lib/api";
+import { clearSession, dashboardForRole } from "@/lib/auth";
 
 export default function Home() {
+  const router = useRouter();
+  const [checkingSession, setCheckingSession] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem("patientflow_access_token");
+    if (!token) {
+      setCheckingSession(false);
+      return;
+    }
+
+    apiClient.get("/auth/me")
+      .then(({ data }) => {
+        const destination = dashboardForRole[data.role as keyof typeof dashboardForRole];
+        router.replace(destination || "/login");
+      })
+      .catch(() => {
+        clearSession();
+        setCheckingSession(false);
+      });
+  }, [router]);
+
+  if (checkingSession) {
+    return <main className="min-h-screen themed-canvas" aria-label="Loading PatientFlow AI" />;
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-canvas-night text-on-primary selection:bg-white selection:text-black">
       {/* Cinematic Top Navigation (nav-bar-dark) */}
@@ -183,3 +214,5 @@ export default function Home() {
     </div>
   );
 }
+
+

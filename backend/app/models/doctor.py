@@ -10,6 +10,7 @@ class Doctor(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
+    organization_id: Mapped[int] = mapped_column(ForeignKey("organizations.id", ondelete="CASCADE"), index=True, nullable=False)
     department_id: Mapped[int] = mapped_column(ForeignKey("departments.id", ondelete="RESTRICT"), nullable=False)
     employee_number: Mapped[str] = mapped_column(String(50), unique=True, index=True, nullable=False)
     specialization: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
@@ -23,3 +24,4 @@ class Doctor(Base):
     department = relationship("Department", back_populates="doctors")
     appointments = relationship("Appointment", back_populates="doctor")
     queue_entries = relationship("QueueEntry", back_populates="doctor")
+

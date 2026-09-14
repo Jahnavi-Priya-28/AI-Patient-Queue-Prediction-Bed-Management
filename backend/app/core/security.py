@@ -28,7 +28,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         return False
 
 
-def create_access_token(subject: Any, role: str, expires_delta: Optional[timedelta] = None) -> str:
+def create_access_token(subject: Any, role: str, organization_id: Optional[int] = None, expires_delta: Optional[timedelta] = None) -> str:
     """Generate JWT Access Token."""
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
@@ -38,6 +38,7 @@ def create_access_token(subject: Any, role: str, expires_delta: Optional[timedel
     to_encode = {
         "sub": str(subject),
         "role": role,
+        "organization_id": organization_id,
         "type": "access",
         "exp": expire,
         "iat": datetime.now(timezone.utc),
@@ -45,12 +46,13 @@ def create_access_token(subject: Any, role: str, expires_delta: Optional[timedel
     return jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
 
 
-def create_refresh_token(subject: Any, role: str) -> str:
+def create_refresh_token(subject: Any, role: str, organization_id: Optional[int] = None) -> str:
     """Generate JWT Refresh Token."""
     expire = datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
     to_encode = {
         "sub": str(subject),
         "role": role,
+        "organization_id": organization_id,
         "type": "refresh",
         "exp": expire,
         "iat": datetime.now(timezone.utc),
@@ -117,3 +119,5 @@ def require_role(allowed_roles: List[UserRole]):
             )
         return current_user
     return role_checker
+
+

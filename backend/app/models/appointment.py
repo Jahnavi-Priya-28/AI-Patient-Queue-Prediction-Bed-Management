@@ -11,6 +11,7 @@ class Appointment(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     patient_id: Mapped[int] = mapped_column(ForeignKey("patients.id", ondelete="CASCADE"), nullable=False, index=True)
+    organization_id: Mapped[int] = mapped_column(ForeignKey("organizations.id", ondelete="CASCADE"), index=True, nullable=False)
     doctor_id: Mapped[int] = mapped_column(ForeignKey("doctors.id", ondelete="RESTRICT"), nullable=False, index=True)
     department_id: Mapped[int] = mapped_column(ForeignKey("departments.id", ondelete="RESTRICT"), nullable=False, index=True)
     appointment_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
@@ -27,3 +28,4 @@ class Appointment(Base):
     doctor = relationship("Doctor", back_populates="appointments")
     department = relationship("Department", back_populates="appointments")
     queue_entry = relationship("QueueEntry", back_populates="appointment", uselist=False, cascade="all, delete-orphan")
+
