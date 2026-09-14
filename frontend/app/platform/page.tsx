@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Activity, Building2, LogOut } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { clearSession, requirePortalUser } from "@/lib/auth";
+import { AIAssistant } from "@/components/AIAssistant";
 
 export default function PlatformDashboard() {
   const router = useRouter();
@@ -29,7 +30,8 @@ export default function PlatformDashboard() {
   }, [router]);
 
   if (!user || !metrics) {
-    return <main className="min-h-screen themed-canvas themed-ink flex items-center justify-center text-sm themed-ink-sec">Loading platform command center...</main>;
+    return <main className="min-h-screen themed-canvas themed-ink flex items-center justify-center text-sm themed-ink-sec">
+        <AIAssistant role="SUPER_ADMIN" />Loading platform command center...</main>;
   }
 
   return (
@@ -44,6 +46,7 @@ export default function PlatformDashboard() {
         </button>
       </header>
       <section className="max-w-6xl mx-auto p-6 lg:p-12 space-y-8">
+        <AIAssistant role="SUPER_ADMIN" />
         <div>
           <span className="inline-block bg-aloe-10 text-ink text-xs font-semibold px-3 py-1 rounded-pill mb-2">SUPER ADMIN</span>
           <h1 className="font-display text-4xl font-light">Platform Overview</h1>
@@ -58,3 +61,5 @@ export default function PlatformDashboard() {
     </main>
   );
 }
+
+

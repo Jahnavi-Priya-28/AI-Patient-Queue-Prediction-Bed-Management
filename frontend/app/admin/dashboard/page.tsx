@@ -6,6 +6,7 @@ import { Activity, Users, Clock, Bed, Cpu, LogOut } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { apiClient } from "@/lib/api";
 import { clearSession, requirePortalUser } from "@/lib/auth";
+import { AIAssistant } from "@/components/AIAssistant";
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -65,6 +66,7 @@ export default function AdminDashboard() {
       </header>
 
       <main className="flex-1 max-w-7xl w-full mx-auto p-6 lg:p-12 space-y-10">
+        <AIAssistant role="HOSPITAL_ADMIN" />
         {/* Header Band */}
         <div>
           <span className="inline-block bg-aloe-10 text-ink text-xs font-semibold px-3 py-1 rounded-pill mb-2">
@@ -160,6 +162,8 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+
 
 
 

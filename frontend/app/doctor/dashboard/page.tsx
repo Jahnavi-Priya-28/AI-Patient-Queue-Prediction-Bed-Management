@@ -6,6 +6,7 @@ import { Activity, UserCheck, LogOut } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { clearSession, requirePortalUser } from "@/lib/auth";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AIAssistant } from "@/components/AIAssistant";
 
 export default function DoctorDashboard() {
   const router = useRouter();
@@ -69,6 +70,7 @@ export default function DoctorDashboard() {
       </header>
 
       <main className="flex-1 max-w-7xl w-full mx-auto p-6 lg:p-12 space-y-10">
+        <AIAssistant role="DOCTOR" />
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 themed-card p-8 rounded-[16px] shadow-stacked-tiny" style={{ borderWidth: '1px', borderColor: 'var(--color-hairline)' }}>
           <div>
             <span className="inline-block text-xs font-semibold px-3 py-1 rounded-pill mb-2" style={{ backgroundColor: 'var(--color-aloe)', color: 'var(--color-ink)' }}>
@@ -153,6 +155,7 @@ export default function DoctorDashboard() {
     </div>
   );
 }
+
 
 
 

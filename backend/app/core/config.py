@@ -16,6 +16,10 @@ class Settings(BaseSettings):
     # Security & JWT
     JWT_SECRET: str = "super-secret-key-change-this-in-production-patientflow-ai-2026"
     JWT_ALGORITHM: str = "HS256"
+
+    # Optional backend-only Gemini integration
+    GEMINI_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-2.5-flash"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
@@ -40,3 +44,5 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+

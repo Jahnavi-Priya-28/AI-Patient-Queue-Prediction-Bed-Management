@@ -6,6 +6,7 @@ import { Activity, UserPlus, Ticket, Bed, LogOut } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { clearSession, requirePortalUser } from "@/lib/auth";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AIAssistant } from "@/components/AIAssistant";
 
 export default function ReceptionistDashboard() {
   const router = useRouter();
@@ -56,6 +57,7 @@ export default function ReceptionistDashboard() {
       </header>
 
       <main className="flex-1 max-w-7xl w-full mx-auto p-6 lg:p-12 space-y-10">
+        <AIAssistant role="RECEPTIONIST" />
         {/* Pistachio Feature Band */}
         <div className="rounded-[16px] p-8 sm:p-10 shadow-stacked-tiny grid grid-cols-1 md:grid-cols-2 gap-8" style={{ backgroundColor: 'var(--color-pistachio)', borderWidth: '1px', borderColor: 'var(--color-hairline)' }}>
           <div className="flex flex-col justify-between">
@@ -139,6 +141,7 @@ export default function ReceptionistDashboard() {
     </div>
   );
 }
+
 
 
 

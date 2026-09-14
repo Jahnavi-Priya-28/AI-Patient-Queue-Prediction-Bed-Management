@@ -11,6 +11,7 @@ from app.api.queue import router as queue_router
 from app.api.beds import router as beds_router
 from app.api.analytics import router as analytics_router
 from app.api.ml import router as ml_router
+from app.api.ai import router as ai_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -42,6 +43,7 @@ app.include_router(queue_router, prefix=settings.API_V1_STR)
 app.include_router(beds_router, prefix=settings.API_V1_STR)
 app.include_router(analytics_router, prefix=settings.API_V1_STR)
 app.include_router(ml_router, prefix=settings.API_V1_STR)
+app.include_router(ai_router, prefix=settings.API_V1_STR)
 
 
 @app.get("/")
@@ -50,3 +52,4 @@ def root():
         "message": f"Welcome to {settings.PROJECT_NAME} API API docs available at /docs",
         "health": f"{settings.API_V1_STR}/health",
     }
+
