@@ -3,8 +3,8 @@ from datetime import date
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 from app.db.session import get_db
-from app.schemas.domain import QueueEntryResponse, CheckInRequest
-from app.services.queue import check_in_patient, call_next_patient, start_consultation, complete_consultation, get_live_queue
+from app.schemas.domain import QueueEntryResponse, QueueSummaryResponse, CheckInRequest
+from app.services.queue import check_in_patient, call_next_patient, start_consultation, complete_consultation, get_live_queue, get_patient_queue_summary
 from app.services.ml import predict_waiting_time
 from app.core.security import get_current_user, require_role
 from app.models.user import User
@@ -36,7 +36,14 @@ def complete_session(queue_entry_id: int, db: Session = Depends(get_db), current
     return complete_consultation(db, queue_entry_id, current_user)
 
 
+@router.get("/my-summary", response_model=QueueSummaryResponse)
+def my_queue_summary(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return get_patient_queue_summary(db, current_user)
+
+
 @router.get("", response_model=List[QueueEntryResponse])
 def get_queue(department_id: Optional[int] = None, doctor_id: Optional[int] = None, queue_date: Optional[date] = None, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return get_live_queue(db, current_user, department_id, doctor_id, queue_date)
+
+
 

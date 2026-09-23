@@ -1,7 +1,7 @@
 from datetime import datetime, date, timezone
 from typing import List, Optional
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import func
+from sqlalchemy import func, case
 from fastapi import HTTPException, status
 from app.models.queue_entry import QueueEntry
 from app.models.appointment import Appointment
@@ -18,6 +18,9 @@ def _staff_can_prioritize(user: User) -> bool:
 
 
 def check_in_patient(db: Session, req: CheckInRequest, user: User) -> QueueEntry:
+    if user.role not in {UserRole.PATIENT, UserRole.RECEPTIONIST, UserRole.HOSPITAL_ADMIN, UserRole.SUPER_ADMIN}:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only patients or authorized hospital staff can check in appointments")
+
     appt = db.query(Appointment).filter(Appointment.id == req.appointment_id).first()
     if not appt or (user.role != UserRole.SUPER_ADMIN and appt.organization_id != user.organization_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Appointment not found")
@@ -54,7 +57,7 @@ def check_in_patient(db: Session, req: CheckInRequest, user: User) -> QueueEntry
         priority=final_priority,
         status=QueueStatus.WAITING,
         check_in_time=datetime.now(timezone.utc),
-        predicted_wait_minutes=float((q_count + 1) * 12),
+        predicted_wait_minutes=None,
     )
     db.add(q_entry)
     appt.status = AppointmentStatus.IN_QUEUE
@@ -138,3 +141,86 @@ def get_live_queue(db: Session, user: User, department_id: Optional[int] = None,
     if doctor_id:
         query = query.filter(QueueEntry.doctor_id == doctor_id)
     return query.order_by(QueueEntry.status.asc(), QueueEntry.check_in_time.asc()).all()
+
+ACTIVE_QUEUE_STATUSES = {
+    QueueStatus.WAITING,
+    QueueStatus.CALLED,
+    QueueStatus.IN_CONSULTATION,
+}
+
+
+def get_patient_queue_summary(db: Session, user: User) -> dict:
+    if user.role != UserRole.PATIENT or not user.patient_profile:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only patients can access a personal queue summary")
+
+    today = date.today()
+    own_entry = db.query(QueueEntry).options(
+        joinedload(QueueEntry.doctor).joinedload(Doctor.user),
+        joinedload(QueueEntry.department),
+    ).filter(
+        QueueEntry.patient_id == user.patient_profile.id,
+        QueueEntry.organization_id == user.organization_id,
+        QueueEntry.queue_date == today,
+    ).order_by(QueueEntry.check_in_time.desc()).first()
+
+    if not own_entry:
+        return {
+            "status": None,
+            "queue_position": None,
+            "people_ahead": 0,
+            "active_queue_length": 0,
+            "estimated_wait_minutes": None,
+            "token_number": None,
+            "department_name": None,
+            "doctor_name": None,
+            "updated_at": datetime.now(timezone.utc),
+        }
+
+    if own_entry.status not in ACTIVE_QUEUE_STATUSES:
+        return {
+            "status": own_entry.status,
+            "queue_position": None,
+            "people_ahead": 0,
+            "active_queue_length": 0,
+            "estimated_wait_minutes": None,
+            "token_number": own_entry.token_number,
+            "department_name": own_entry.department.name if own_entry.department else None,
+            "doctor_name": f"Dr. {own_entry.doctor.user.first_name} {own_entry.doctor.user.last_name}" if own_entry.doctor and own_entry.doctor.user else None,
+            "updated_at": datetime.now(timezone.utc),
+        }
+
+    queue_query = db.query(QueueEntry).filter(
+        QueueEntry.organization_id == own_entry.organization_id,
+        QueueEntry.department_id == own_entry.department_id,
+        QueueEntry.doctor_id == own_entry.doctor_id,
+        QueueEntry.queue_date == today,
+        QueueEntry.status.in_(ACTIVE_QUEUE_STATUSES),
+    )
+    active_queue_length = queue_query.count()
+    priority_rank = case(
+        (QueueEntry.priority == PriorityLevel.EMERGENCY, 3),
+        (QueueEntry.priority == PriorityLevel.URGENT, 2),
+        else_=1,
+    )
+    own_priority_rank = {PriorityLevel.EMERGENCY: 3, PriorityLevel.URGENT: 2, PriorityLevel.NORMAL: 1}[own_entry.priority]
+    people_ahead = queue_query.filter(
+        (priority_rank > own_priority_rank) |
+        ((priority_rank == own_priority_rank) & (QueueEntry.check_in_time < own_entry.check_in_time))
+    ).count()
+    consultation_minutes = own_entry.doctor.consultation_duration if own_entry.doctor else 0
+
+    return {
+        "status": own_entry.status,
+        "queue_position": people_ahead + 1,
+        "people_ahead": people_ahead,
+        "active_queue_length": active_queue_length,
+        "estimated_wait_minutes": round(float(people_ahead * consultation_minutes), 1),
+        "token_number": own_entry.token_number,
+        "department_name": own_entry.department.name if own_entry.department else None,
+        "doctor_name": f"Dr. {own_entry.doctor.user.first_name} {own_entry.doctor.user.last_name}" if own_entry.doctor and own_entry.doctor.user else None,
+        "updated_at": datetime.now(timezone.utc),
+    }
+
+
+
+

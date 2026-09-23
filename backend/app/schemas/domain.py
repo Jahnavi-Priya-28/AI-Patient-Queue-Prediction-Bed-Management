@@ -122,6 +122,18 @@ class QueueEntryResponse(BaseModel):
     department: Optional[DepartmentResponse] = None
 
 
+class QueueSummaryResponse(BaseModel):
+    status: Optional[QueueStatus] = None
+    queue_position: Optional[int] = None
+    people_ahead: int = 0
+    active_queue_length: int = 0
+    estimated_wait_minutes: Optional[float] = None
+    token_number: Optional[str] = None
+    department_name: Optional[str] = None
+    doctor_name: Optional[str] = None
+    updated_at: datetime
+
+
 class WardResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -217,3 +229,4 @@ class ForecastDemandResponse(BaseModel):
     predicted_queue_depth: int
     recommended_doctor_capacity: int
     forecast_sequence: List[dict]
+
